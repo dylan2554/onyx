@@ -1703,7 +1703,7 @@ int main(int argc, char **argv) {
 
         if (cmd == "uci") {
             printf("id name Sable 1.6\n");
-            printf("id author Claude (Anthropic)\n");
+            printf("id author Dylan (with Claude)\n");
             printf("option name Hash type spin default 128 min 1 max 2048\n");
             printf("option name Threads type spin default 1 min 1 max 16\n");
             printf("option name EvalFile type string default sable.nnue\n");
