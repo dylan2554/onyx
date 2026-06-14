@@ -1,7 +1,7 @@
 # Sable
 
 A UCI chess engine written from scratch in C++, with a **self-trained NNUE evaluation**.
-Estimated strength: **~2965 Elo** (see [Strength](#strength)).
+Estimated strength: **~3200 Elo** (see [Strength](#strength)).
 
 Sable was built and trained on a single desktop PC (Intel i7-11700K + RTX 3070) — the
 neural network's training data was generated entirely by the engine playing itself,
