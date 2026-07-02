@@ -1,9 +1,9 @@
-# Sable
+# Onyx
 
 A UCI chess engine written from scratch in C++, with a **self-trained NNUE evaluation**.
 Estimated strength: **~3200 CCRL (single-threaded, estimated)** — see [Strength](#strength).
 
-Sable was built and trained on a single desktop PC (Intel i7-11700K + RTX 3070) — the
+Onyx was built and trained on a single desktop PC (Intel i7-11700K + RTX 3070) — the
 neural network's training data was generated entirely by the engine playing itself,
 with no external datasets or pretrained weights.
 
@@ -38,7 +38,7 @@ with no external datasets or pretrained weights.
   mobility) when no network file is present
 
 **Training pipeline** (included)
-- `sable datagen` — self-play data generation, writing labeled positions to disk
+- `Onyx datagen` — self-play data generation, writing labeled positions to disk
 - `train_gpu.py` — PyTorch NNUE trainer (GPU or CPU)
 - `train.py` — pure-NumPy trainer (no GPU required)
 - The net was trained across several "generations": each generation regenerates data
@@ -48,17 +48,17 @@ with no external datasets or pretrained weights.
 
 ## Usage
 
-Sable speaks the [UCI protocol](https://en.wikipedia.org/wiki/Universal_Chess_Interface),
+Onyx speaks the [UCI protocol](https://en.wikipedia.org/wiki/Universal_Chess_Interface),
 so it works in any UCI GUI (Arena, Cute Chess, BanksiaGUI, etc.).
 
-1. Download `sable.exe` and `sable.nnue` from the [Releases](../../releases) page.
-2. Keep **both files in the same folder** — the engine loads `sable.nnue` automatically.
-3. In your GUI: add a new UCI engine and point it at `sable.exe`.
+1. Download `onyx.exe` and `onyx.nnue` from the [Releases](../../releases) page.
+2. Keep **both files in the same folder** — the engine loads `onyx.nnue` automatically.
+3. In your GUI: add a new UCI engine and point it at `onyx.exe`.
 
 UCI options:
 - `Hash` (MB) — transposition table size
 - `Threads` — number of search threads
-- `EvalFile` — path to an NNUE file (defaults to `sable.nnue`)
+- `EvalFile` — path to an NNUE file (defaults to `onyx.nnue`)
 
 ## Building from source
 
@@ -66,10 +66,10 @@ Requires a C++17 compiler.
 
 ```sh
 # Linux / macOS
-g++ -O3 -mavx2 -pthread sable.cpp -o sable
+g++ -O3 -mavx2 -pthread onyx.cpp -o Onyx
 
 # Windows (MinGW-w64)
-g++ -O3 -mavx2 -static -static-libgcc -static-libstdc++ -pthread sable.cpp -o sable.exe
+g++ -O3 -mavx2 -static -static-libgcc -static-libstdc++ -pthread onyx.cpp -o onyx.exe
 ```
 
 A build without `-mavx2` also works (slower NNUE inference) for older CPUs.
@@ -83,7 +83,7 @@ under fair conditions: **single thread for both sides, equal 128 MB hash, 2'+1" 
 control** (CCRL Blitz), ponder off. The estimate is consistent across four independent
 anchors.
 
-| Opponent (CCRL Blitz) | Sable score | Games | Implied Sable Elo |
+| Opponent (CCRL Blitz) | Onyx score | Games | Implied Onyx Elo |
 |-----------------------|-------------|-------|-------------------|
 | Inanis 1.6.0 (~3000)  | 70%         | 100   | ~3150 |
 | Stash v27 (~3057)     | ~76%        | 180   | ~3260 |
@@ -91,7 +91,7 @@ anchors.
 | Stash v32 (~3252)     | ~43%        | 180   | ~3200 |
 
 The anchors agree within their error bars, centering on **~3200 CCRL single-threaded**.
-With multiple threads (Lazy SMP) Sable is stronger still; these numbers are the
+With multiple threads (Lazy SMP) Onyx is stronger still; these numbers are the
 single-thread figure for comparability with CCRL's testing conditions.
 
 > Note: this is a self-estimate, not an official CCRL listing. The method follows the
@@ -102,13 +102,13 @@ single-thread figure for comparability with CCRL's testing conditions.
 
 See `train_gpu.py` (or `train.py`). The pipeline is:
 
-1. Generate self-play data: `sable datagen <games> <nodes_per_move> <out.bin> <seed> <hashMB>`
+1. Generate self-play data: `Onyx datagen <games> <nodes_per_move> <out.bin> <seed> <hashMB>`
 2. Train: `python train_gpu.py --data "*.bin" --epochs 30 --lam 0.85`
-3. The trainer exports `sable.nnue` after every epoch; drop it next to the engine.
+3. The trainer exports `onyx.nnue` after every epoch; drop it next to the engine.
 
 ## About this project
 
-Sable was built as a collaboration between me (Dylan) and Anthropic's Claude. Claude
+Onyx was built as a collaboration between me (Dylan) and Anthropic's Claude. Claude
 wrote the engine and training code; I directed the design, ran all training and testing
 on my own hardware (i7-11700K + RTX 3070), debugged the pipeline, and verified strength
 at every step. The neural network was trained from zero on self-play games generated on
