@@ -1,13 +1,13 @@
 # Onyx 2.0
 
-A UCI chess engine, ~3450-3500 blitz strength, written entirely by AI
+A UCI chess engine, ~3390 blitz strength (CCRL-equivalent estimate), written entirely by AI
 agents (Anthropic's Claude and OpenAI's Codex) working under human
 direction. Every line of engine code is original to this project - nothing
 was copied from Stockfish or any other engine. The NNUE network is trained
 exclusively on Onyx's own self-play data, generated and trained on free
 cloud compute.
 
-Formerly named "Sable"; renamed Onyx from v1.6, the previous public release. (1.7-1.8 were internal development builds.)
+Formerly named "Sable" (v1.0-1.7); renamed Onyx from v1.8.
 
 ## Files
 
@@ -33,7 +33,7 @@ GCC 10+ on any x64 platform (Windows/Linux). AVX2 strongly recommended.
 
 ## Strength
 
-- 1,000 games vs Stash 34.0 (~3400 CCRL Blitz) at 10s+0.1s:
+- 1,000 games vs Stash 34.0 (CCRL Blitz 3328) at 10s+0.1s:
   **+62.9 +/- 17.1 Elo** (58.95%).
 - Onyx 2.0 vs Onyx 1.8 at fixed 20k nodes/move: ~+280 Elo across the
   campaign's SPRT-gated changes (12 accepted search/eval changes plus the

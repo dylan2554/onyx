@@ -17,7 +17,7 @@
 //  BADCAP/QUIETSEEx2/QCHECKSEE/CHECKGUARD/LMPDEPTH/CONTCORR/
 //  NPCORR/KPCORR/TTSTORE/SEEGE/SPSA-01+03/DELTAM + the gen8 net).
 //
-//  Measured: +62.9 +/- 17.1 vs Stash 34.0, 1,000 games @ 10s+0.1s.
+//  Measured: +62.9 +/- 17.1 vs Stash 34.0 (CCRL Blitz 3328), 1,000 games @ 10s+0.1s -> ~3390 CCRL-Blitz-equivalent.
 //
 //  Single file. Compile:  g++ -O3 -march=native -pthread onyx.cpp -o onyx
 // ============================================================
