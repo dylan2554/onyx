@@ -7,7 +7,7 @@ was copied from Stockfish or any other engine. The NNUE network is trained
 exclusively on Onyx's own self-play data, generated and trained on free
 cloud compute.
 
-Formerly named "Sable" (v1.0-1.7); renamed Onyx from v1.8.
+Formerly named "Sable"; renamed Onyx from v1.6, the previous public release. (1.7-1.8 were internal development builds.)
 
 ## Files
 
