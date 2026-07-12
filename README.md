@@ -1,129 +1,63 @@
-# Onyx
+# Onyx 2.0
 
-A UCI chess engine written from scratch in C++, with a **self-trained NNUE evaluation**.
-Estimated strength: **~3200 CCRL (single-threaded, estimated)** — see [Strength](#strength).
+A UCI chess engine, ~3450-3500 blitz strength, written entirely by AI
+agents (Anthropic's Claude and OpenAI's Codex) working under human
+direction. Every line of engine code is original to this project - nothing
+was copied from Stockfish or any other engine. The NNUE network is trained
+exclusively on Onyx's own self-play data, generated and trained on free
+cloud compute.
 
-Onyx was built and trained on a single desktop PC (Intel i7-11700K + RTX 3070) — the
-neural network's training data was generated entirely by the engine playing itself,
-with no external datasets or pretrained weights.
+Formerly named "Sable" (v1.0-1.7); renamed Onyx from v1.8.
 
----
+## Files
 
-## Features
+- `onyx-2.0-win-avx2.exe`    - Windows x64, AVX2 (2013+ CPUs; recommended)
+- `onyx-2.0-win-generic.exe` - Windows x64, any CPU (slower)
+- `onyx.nnue`                - the gen8 neural network - KEEP NEXT TO THE EXE
+- `book.bin`                 - small Polyglot opening book (optional;
+                               engine plays without it, UCI OwnBook toggles)
+- `src/onyx.cpp`             - complete source, one file
+- `SHA256SUMS.txt`           - artifact hashes
 
-**Board & move generation**
-- Bitboard representation with magic-bitboard sliding-piece attacks
-- Fully legal move generation (verified by perft against known node counts, including Kiwipete)
-- Zobrist hashing
+## Install
 
-**Search**
-- Iterative deepening with aspiration windows
-- Principal Variation Search (PVS) inside alpha-beta
-- Transposition table with depth-preferred replacement and aging
-- Null-move pruning
-- Late Move Reductions (history-adjusted)
-- Singular extensions (with double extensions and multi-cut)
-- Reverse futility pruning, futility pruning, razoring
-- Late move pruning and history pruning
-- SEE-based pruning of losing captures
-- Killer moves, counter-moves, and butterfly + continuation history (with maluses)
-- Quiescence search with SEE filtering, delta pruning, and quiet checks
-- Mate-distance pruning
-- **Lazy SMP** multithreading (1–16 threads)
+Point any UCI GUI (Arena, Cute Chess, En Croissant, Banksia) at the exe.
+Keep `onyx.nnue` in the same folder. Options: Hash (MB), Threads, OwnBook,
+EvalFile, plus exposed search-tuning spins (leave at defaults).
 
-**Evaluation**
-- NNUE: `768 → 512×2 (perspective accumulators) → 1`, clipped-ReLU, quantized int16
-- Incrementally updated accumulators, accelerated with AVX2 SIMD
-- Falls back to a hand-crafted tapered evaluation (PeSTO + king safety, pawn structure,
-  mobility) when no network file is present
+## Build from source
 
-**Training pipeline** (included)
-- `Onyx datagen` — self-play data generation, writing labeled positions to disk
-- `train_gpu.py` — PyTorch NNUE trainer (GPU or CPU)
-- `train.py` — pure-NumPy trainer (no GPU required)
-- The net was trained across several "generations": each generation regenerates data
-  using the previous, stronger network to label positions, then retrains.
+    g++ -std=c++17 -O3 -march=native -static -pthread onyx.cpp -o onyx.exe
 
----
-
-## Usage
-
-Onyx speaks the [UCI protocol](https://en.wikipedia.org/wiki/Universal_Chess_Interface),
-so it works in any UCI GUI (Arena, Cute Chess, BanksiaGUI, etc.).
-
-1. Download `onyx.exe` and `onyx.nnue` from the [Releases](../../releases) page.
-2. Keep **both files in the same folder** — the engine loads `onyx.nnue` automatically.
-3. In your GUI: add a new UCI engine and point it at `onyx.exe`.
-
-UCI options:
-- `Hash` (MB) — transposition table size
-- `Threads` — number of search threads
-- `EvalFile` — path to an NNUE file (defaults to `onyx.nnue`)
-
-## Building from source
-
-Requires a C++17 compiler.
-
-```sh
-# Linux / macOS
-g++ -O3 -mavx2 -pthread onyx.cpp -o Onyx
-
-# Windows (MinGW-w64)
-g++ -O3 -mavx2 -static -static-libgcc -static-libstdc++ -pthread onyx.cpp -o onyx.exe
-```
-
-A build without `-mavx2` also works (slower NNUE inference) for older CPUs.
+GCC 10+ on any x64 platform (Windows/Linux). AVX2 strongly recommended.
 
 ## Strength
 
-**Estimated ~3200 CCRL Blitz, single-threaded.**
+- 1,000 games vs Stash 34.0 (~3400 CCRL Blitz) at 10s+0.1s:
+  **+62.9 +/- 17.1 Elo** (58.95%).
+- Onyx 2.0 vs Onyx 1.8 at fixed 20k nodes/move: ~+280 Elo across the
+  campaign's SPRT-gated changes (12 accepted search/eval changes plus the
+  gen8 network; every change validated by sequential probability ratio
+  tests on disjoint fresh opening suites).
 
-This was measured by triangulating against engines with published CCRL Blitz ratings,
-under fair conditions: **single thread for both sides, equal 128 MB hash, 2'+1" time
-control** (CCRL Blitz), ponder off. The estimate is consistent across four independent
-anchors.
+## Architecture (v2.0)
 
-| Opponent (CCRL Blitz) | Onyx score | Games | Implied Onyx Elo |
-|-----------------------|-------------|-------|-------------------|
-| Inanis 1.6.0 (~3000)  | 70%         | 100   | ~3150 |
-| Stash v27 (~3057)     | ~76%        | 180   | ~3260 |
-| Stash v30 (~3166)     | ~54%        | 180   | ~3195 |
-| Stash v32 (~3252)     | ~43%        | 180   | ~3200 |
-
-The anchors agree within their error bars, centering on **~3200 CCRL single-threaded**.
-With multiple threads (Lazy SMP) Onyx is stronger still; these numbers are the
-single-thread figure for comparability with CCRL's testing conditions.
-
-> Note: this is a self-estimate, not an official CCRL listing. The method follows the
-> community-standard approach of testing against Stash versions of known rating
-> (see the [engine testing guide](https://dannyhammer.github.io/engine-testing-guide/)).
-
-## Training your own network
-
-See `train_gpu.py` (or `train.py`). The pipeline is:
-
-1. Generate self-play data: `Onyx datagen <games> <nodes_per_move> <out.bin> <seed> <hashMB>`
-2. Train: `python train_gpu.py --data "*.bin" --epochs 30 --lam 0.85`
-3. The trainer exports `onyx.nnue` after every epoch; drop it next to the engine.
-
-## About this project
-
-Onyx was built as a collaboration between me (Dylan) and Anthropic's Claude. Claude
-wrote the engine and training code; I directed the design, ran all training and testing
-on my own hardware (i7-11700K + RTX 3070), debugged the pipeline, and verified strength
-at every step. The neural network was trained from zero on self-play games generated on
-my own PC — no external data and no pretrained weights.
-
-I'm releasing it to show what one person and a current AI model can build together in a
-few days: a chess engine going from non-existent to ~3200 CCRL (estimated) in under a week.
+- Bitboards with magic move generation; single-file C++17.
+- NNUE 768->768x2->1 (CReLU, int16 SIMD), fused AVX2 accumulator updates,
+  per-ply accumulator stack. Net trained with lambda-blended WDL/score
+  targets on 97.5M self-play positions (~200M-position successor training
+  in progress).
+- PVS/alpha-beta: aspiration windows, TT with depth/bound-aware same-key
+  replacement, quiescence TT, singular extensions + multicut, null-move
+  pruning, razoring, reverse futility, futility + history + late-move
+  pruning with quiet-check guards, SEE pruning of quiets and captures
+  (threshold SEE fast path), killer/counter/continuation/capture history,
+  and four static-eval correction histories (pawn-structure, previous-move,
+  non-pawn placement per color, pawn-king).
+- All search constants machine-tuned via SPSA match-play (no hand-copied
+  values).
 
 ## License
 
-[MIT](LICENSE) © Dylan
-
-## Acknowledgements
-
-Engine and training code written with Anthropic's Claude. Evaluation piece-square tables
-are based on the public-domain PeSTO values; search techniques follow ideas long
-established in the open-source computer-chess community (the Chess Programming Wiki,
-Stockfish, and others).
+MIT. (c) 2026 Dylan Hogarth and contributors (AI-generated code
+directed and validated by the project owner).
