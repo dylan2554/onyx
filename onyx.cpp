@@ -1,23 +1,23 @@
 // ============================================================
-//  Onyx 1.8 — a UCI chess engine written by Claude (Anthropic)
-//  (formerly "Sable", renamed because that name was taken)
-//  Bitboards + magic move generation
-//  PVS / alpha-beta, transposition table, null-move, LMR,
-//  killers/history, quiescence, aspiration windows
-//  NNUE evaluation (onyx.nnue) with PeSTO classical fallback
+//  Onyx 2.0 — a UCI chess engine written by AI agents
+//  (Anthropic Claude and OpenAI Codex, under human direction;
+//  formerly "Sable", renamed because that name was taken)
 //
-//  1.8 changes (measured at fixed-node self-play, 20k nodes):
-//   * mailbox board + per-ply NNUE accumulator stack with fused
-//     AVX2 updates: +54-65% nodes/sec (search-identical refactor)
-//   * transposition table in quiescence search          (+68 elo)
-//   * pawn-structure correction history for static eval (+30 elo)
-//   * capture history in capture ordering               (+8 elo)
-//   * robust aspiration windows, child-killer reset, 50-move eval
-//     damping, best-move effort based time scaling, keyHist
-//     overflow fix
-//  Tried and rejected (kept behind FEAT_* flags, default off):
-//   TT-score eval refinement (-151), 2-ply continuation history
-//   (-29), cutnode LMR extra reduction (-19)
+//  Bitboards + magic move generation; PVS/alpha-beta with TT,
+//  null move, singular extensions + multicut, razoring/RFP,
+//  futility + history + late-move + SEE pruning with quiet-check
+//  guards, killer/counter/continuation/capture history, and four
+//  static-eval correction histories (pawn, previous-move,
+//  non-pawn placement, pawn-king). NNUE 768->768x2->1 (gen8 net,
+//  onyx.nnue) with fused AVX2 accumulator updates and a PeSTO
+//  classical fallback. All constants machine-tuned via SPSA
+//  match play; every change SPRT-gated (~45 experiments; see the
+//  repo's EXPERIMENT_LOG.md for the complete accept/reject
+//  history, including 2.0's twelve accepted changes:
+//  BADCAP/QUIETSEEx2/QCHECKSEE/CHECKGUARD/LMPDEPTH/CONTCORR/
+//  NPCORR/KPCORR/TTSTORE/SEEGE/SPSA-01+03/DELTAM + the gen8 net).
+//
+//  Measured: +62.9 +/- 17.1 vs Stash 34.0, 1,000 games @ 10s+0.1s.
 //
 //  Single file. Compile:  g++ -O3 -march=native -pthread onyx.cpp -o onyx
 // ============================================================
@@ -3564,7 +3564,7 @@ int main(int argc, char **argv) {
         ss >> cmd;
 
         if (cmd == "uci") {
-            printf("id name Onyx 1.8\n");
+            printf("id name Onyx 2.0\n");
             printf("id author Dylan (with Claude)\n");
             printf("option name Hash type spin default 128 min 1 max 4096\n");
             printf("option name Threads type spin default 1 min 1 max 16\n");

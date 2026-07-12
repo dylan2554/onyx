@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Sable NNUE trainer (pure NumPy - no GPU/torch needed).
+Onyx NNUE trainer, CPU reference implementation (pure NumPy - no GPU/torch needed). Superseded by train_gpu.py for real runs.
 Arch: 768 -> (256 x 2 perspectives, shared weights) -> 1
 
 Usage:
-  python train.py --data "data*.bin" --epochs 30 --out sable.nnue --threads 4
+  python train.py --data "data*.bin" --epochs 30 --out candidate.nnue --threads 4
 
 PC-friendly: set --threads to (your cores - 2) or less. Exports a usable
 net after EVERY epoch, so you can stop any time and keep the latest.
@@ -18,7 +18,7 @@ ap.add_argument("--epochs", type=int, default=30)
 ap.add_argument("--batch", type=int, default=16384)
 ap.add_argument("--lr", type=float, default=1e-3)
 ap.add_argument("--lam", type=float, default=0.7, help="weight on search eval vs game result")
-ap.add_argument("--out", default="sable.nnue")
+ap.add_argument("--out", default="candidate.nnue")
 ap.add_argument("--threads", type=int, default=4)
 ap.add_argument("--hidden", type=int, default=512, choices=[256, 512])
 ap.add_argument("--checkpoint", default="checkpoint.npz")
